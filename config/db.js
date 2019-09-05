@@ -1,30 +1,20 @@
 const mongoose = require('mongoose'),
-  {
-    DB_HOST,
-    DB_USERNAME,
-    DB_PASSWORD,
-    DB_PORT,
-    DB_NAME
-    // } = require('../constant/index.dev')
-  } = require('../constant')
-
-const DB_URL = `mongodb://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}`
+  config = require('config'),
+  mongoConfig = config.get('mongoConfig')
 
 mongoose.Promise = global.Promise
 mongoose.set('debug', true)
 
-try {
-  mongoose.connect(DB_URL, { useNewUrlParser: true })
-} catch (err) {
-  mongoose.createConnection(DB_URL, {
-    useNewUrlParser: true
-  })
+module.exports = async () => {
+  try {
+    await mongoose.connect(mongoConfig, {
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useFindAndModify: false
+    })
+    console.log('MongoDB Connected ...')
+  } catch (err) {
+    console.error(err.message)
+    process.exit(1)
+  }
 }
-
-mongoose.connection
-  .on('open', () => {
-    console.log('MongoDB Running')
-  })
-  .on('error', e => {
-    throw e
-  })
